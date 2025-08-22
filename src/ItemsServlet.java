@@ -7,43 +7,33 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 
-// Declaring a WebServlet called ItemServlet, which maps to url "/items"
+// Declares a WebServlet called ItemServlet which maps to url "/items"
 @WebServlet(name = "ItemServlet", urlPatterns = "/items")
 
 public class ItemsServlet extends HttpServlet {
     public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
-
-        // Get a instance of current session on the request
+        // Gets an instance of current session on the request
         HttpSession session = request.getSession();
-
-        // Retrieve data named "previousItems" from session
+        // Retrieves data named "previousItems" from session
+        @SuppressWarnings("unchecked")
         ArrayList<String> previousItems = (ArrayList<String>) session.getAttribute("previousItems");
 
-        // If "previousItems" is not found on session, means this is a new user, thus we create a new previousItems
+        // If "previousItems" is not found it means this is a new user so we create a new previousItems
         // ArrayList for the user
         if (previousItems == null) {
-
             // Add the newly created ArrayList to session, so that it could be retrieved next time
-            previousItems = new ArrayList<String>();
+            previousItems = new ArrayList<>();
             session.setAttribute("previousItems", previousItems);
         }
 
         // Log to localhost log
         request.getServletContext().log("getting " + previousItems.size() + " items");
-
-        String newItem = request.getParameter("newItem"); // Get parameter that sent by GET request url
-
+        // Get parameter that sent by GET request url
+        String newItem = request.getParameter("newItem");
         response.setContentType("text/html");
         PrintWriter out = response.getWriter();
         String title = "Items Purchased";
-
-        out.println(String.format("<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0 Transitional//EN\">\n" +
-                "<html>\n" +
-                "   <head>" +
-                "   <title>%s</title>" +
-                "   </head>\n" +
-                "   <body bgcolor=\"#FDF5E6\">\n" +
-                "       <h1>%s</h1>", title, title));
+        outputHeader(out, title);
 
         // In order to prevent multiple clients, requests from altering previousItems ArrayList at the same time, we
         // lock the ArrayList while updating
@@ -53,7 +43,7 @@ public class ItemsServlet extends HttpServlet {
             }
 
             // Display the current previousItems ArrayList
-            if (previousItems.size() == 0) {
+            if (previousItems.isEmpty()) {
                 out.println("<i>No items</i>");
             } else {
                 out.println("<ul>");
@@ -63,7 +53,16 @@ public class ItemsServlet extends HttpServlet {
                 out.println("</ul>");
             }
         }
-
         out.println("</body></html>");
+    }
+
+    private static void outputHeader(PrintWriter out, String title) {
+        out.println(String.format("<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0 Transitional//EN\">\n" +
+                "<html>\n" +
+                "   <head>" +
+                "   <title>%s</title>" +
+                "   </head>\n" +
+                "   <body bgcolor=\"#FDF5E6\">\n" +
+                "       <h1>%s</h1>", title, title));
     }
 }
